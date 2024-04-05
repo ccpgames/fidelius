@@ -1,0 +1,52 @@
+[build-system]
+requires = [ "setuptools>=42", "wheel" ]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fidelius"
+dynamic = ["version"]
+description = "The Fidelius Charm! (keeping things secret)"
+readme = { file = "README.md", content-type = "text/markdown" }
+license = { file = "LICENSE" }
+authors = [
+    { name = "Thordur Matthiasson", email = "thordurm@ccpgames.com" },
+    { name = "Kristin Fjola Tomasdottir", email = "kristinf@ccpgames.com" }
+]
+keywords = [ "parameter store", "aws", "secrets", "tools", "ccp", "utils" ]
+classifiers = [
+    "Development Status :: 4 - Beta",
+
+    "License :: OSI Approved :: MIT License",
+
+    "Intended Audience :: Developers",
+
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+
+    "Topic :: Software Development",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Utilities"
+]
+dependencies = [
+  "boto3 >=1.20, <2"
+]
+
+[project.urls]
+Homepage = "https://github.com/ccpgames/fidelius"
+Documentation = "https://github.com/ccpgames/fidelius/blob/main/README.md"
+Repository = "https://github.com/ccpgames/fidelius.git"
+Issues = "https://github.com/ccpgames/fidelius/issues"
+Changelog = "https://github.com/ccpgames/fidelius/blob/main/CHANGELOG.md"
+
+[tool.setuptools.dynamic]
+version = {attr = "fidelius.__version__"}
+
+[tool.setuptools.packages.find]
+where = [ "." ]
+exclude = [ "tests", "tests.*" ]
