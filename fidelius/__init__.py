@@ -1,4 +1,4 @@
-__version__ = '0.6.0'
+__version__ = '0.7.0-alpha.1'
 
 __author__ = 'Thordur Matthiasson <thordurm@ccpgames.com>'
 __license__ = 'MIT License'

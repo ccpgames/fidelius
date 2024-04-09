@@ -3,6 +3,8 @@ __all__ = [
 ]
 
 from fidelius.structs import *
+from fidelius.gateway.interface import *
+
 
 import boto3
 import os
@@ -11,13 +13,12 @@ import logging
 log = logging.getLogger(__name__)
 
 
-class ParameterStore(object):
+class ParameterStore(IFideliusRepo):
     _KEY_ID = os.environ.get('FIDELIUS_AWS_KEY_ARN', '')
     _DEFAULT_REGION_NAME = os.environ.get('AWS_DEFAULT_REGION', 'eu-west-1')
-    _APP_FULL_NAME = '/fidelius/{group}/{env}/apps/{app}/{name}'
-    _SHARED_FULL_NAME = '/fidelius/{group}/{env}/shared/{folder}/{name}'
 
     def __init__(self, app: str, group: str, env: str):
+        super().__init__(app, group, env)
         if not self._KEY_ID:
             raise RuntimeError('Fidelius requires the ARN for the KMS key to use to be in the FIDELIUS_AWS_KEY_ARN environment variable')
 
@@ -44,10 +45,7 @@ class ParameterStore(object):
             return self._APP_FULL_NAME.format(group=self._group, app=self._app, env=self._env, name=name)
 
     def _nameless_path(self, folder: Optional[str] = None) -> str:
-        if folder:
-            return self._full_path(name='', folder=folder)[:-1]
-        else:
-            return self._full_path(name='', folder=folder)[:-1]
+        return self._full_path(name='', folder=folder)[:-1]
 
     def _force_log_secrecy(self):
         # We don't allow debug or less logging of botocore's HTTP requests cause

@@ -34,7 +34,8 @@ classifiers = [
     "Topic :: Utilities"
 ]
 dependencies = [
-  "boto3 >=1.20, <2"
+    "ccptools >=1.1, <2",
+    "boto3 >=1.20, <2"
 ]
 
 [project.urls]
