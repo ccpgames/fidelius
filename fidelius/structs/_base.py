@@ -1,3 +1,1 @@
-from typing import *
-
-import datetime
+from ccptools.structs import *

@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 class ParameterStoreAdmin(IFideliusAdminRepo, ParameterStore):
     def __init__(self, app: str, group: str, env: str, owner: str, finance: str = 'COST', **extra_tags):
         super().__init__(app, group, env)
-        self._tags = Tags(application=self._app, owner=owner, tier=env, finance=finance, **extra_tags)
+        self._tags = FideliusTags(application=self._app, owner=owner, tier=env, finance=finance, **extra_tags)
 
     def set_env(self, env: str):
         self._env = env

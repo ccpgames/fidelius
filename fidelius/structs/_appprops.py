@@ -1,13 +1,13 @@
 __all__ = [
-    'AppProps',
+    'FideliusAppProps',
 ]
 from ccptools.structs import *
 
 
 @dataclasses.dataclass
-class AppProps:
+class FideliusAppProps:
     """Application properties,  used to get or set specific variations of
-    parameters/secrets.s
+    parameters/secrets.
 
     :ivar app: The name of the application itself (module name or slug)
     :ivar group: The app's "group" (think "business domain" or "namespace").
@@ -20,4 +20,3 @@ class AppProps:
     app: str
     group: str
     env: str = 'default'
-æ

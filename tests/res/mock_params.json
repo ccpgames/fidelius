@@ -1,0 +1,15 @@
+{
+    "/fidelius/mygroup/default/apps/myapp/DB_PASSWORD": "default-pass",
+    "/fidelius/mygroup/local/apps/myapp/DB_PASSWORD": "local-pass",
+    "/fidelius/mygroup/test/apps/myapp/DB_PASSWORD": "test-pass",
+    "/fidelius/mygroup/prod/apps/myapp/DB_PASSWORD": "prod-pass",
+
+    "/fidelius/mygroup/default/apps/myapp/DB_USERNAME": "svc_mock_user",
+    "/fidelius/mygroup/prod/apps/myapp/DB_USERNAME": "svc_mock_prod_user",
+
+    "/fidelius/mygroup/default/apps/otherapp/DB_USERNAME": "svc_mock_other_user",
+    "/fidelius/mygroup/test/apps/otherapp/DB_USERNAME": "svc_mock_other_test_user",
+
+    "/fidelius/mygroup/default/shared/database/DB_HOST": "dev-host.mock.cc",
+    "/fidelius/mygroup/prod/shared/database/DB_HOST": "real-host.mock.cc"
+}

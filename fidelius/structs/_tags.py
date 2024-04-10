@@ -1,10 +1,10 @@
 __all__ = [
-    'Tags',
+    'FideliusTags',
 ]
 from ._base import *
 
 
-class Tags:
+class FideliusTags:
     __slots__ = ('application', 'owner', 'tier', 'finance', '_other')
 
     def __init__(self, application: str, owner: str, tier: str = 'default', finance: str = 'COST', **kwargs):
@@ -44,4 +44,5 @@ class Tags:
         return d
 
     def to_aws_format(self) -> List[Dict[str, str]]:
+        # TODO(thordurm@ccpgames.com>) 2024-04-09: Move to param-store implementation!
         return [{'Key': k, 'Value': v} for k, v in self.to_dict().items()]
