@@ -32,6 +32,10 @@ class FideliusTags:
     def __delattr__(self, name: str):
         self.__setattr__(name, None)
 
+    def __repr__(self) -> str:
+        tags = ', '.join([f"{k}='{v}'" for k, v in self.to_dict().items()])
+        return f'{self.__class__.__name__}({tags})'
+
     def to_dict(self) -> Dict[str, str]:
         d = {
             'application': self.application,

@@ -3,31 +3,27 @@ __all__ = [
 ]
 
 from fidelius.structs import *
-from fidelius.gateway.interface import *
+from fidelius.gateway._abstract import *
 
-import json
+import base64
 
 import logging
 log = logging.getLogger(__name__)
 
 
-class MockFideliusRepo(IFideliusRepo):
-    _APP_FULL_NAME = '/fidelius/{group}/{env}/apps/{app}/{name}'
-    _SHARED_FULL_NAME = '/fidelius/{group}/{env}/shared/{folder}/{name}'
+class MockFideliusRepo(_BaseFideliusRepo):
+    def __init__(self, app_props: FideliusAppProps, **kwargs):
+        """This mock variation of the FideliusRepo simply returns a base64
+        encoded version of the full path of the requested parameter/secret.
 
-    def __init__(self, app: str, group: str, env: str, pre_seeded_cache: Optional[Union[dict, str]] = None, **kwargs):
-        super().__init__(app, group, env)
-        self._cache: Dict[str, str] = {}
-        self._loaded: bool = False
+        This is mainly intended for unit testing other packages and apps that
+        use Fidelius.
+        """
+        log.debug('MockFideliusRepo.__init__')
+        super().__init__(app_props, **kwargs)
 
-        self._pre_seeded_cache = pre_seeded_cache
+    def get_app_param(self, name: str, env: Optional[str] = None) -> Optional[str]:
+        return base64.encodebytes(self.get_full_path(name, env=env).encode('utf-8')).decode('utf-8').strip()
 
-    def _load_all(self, folder: Optional[str] = None):
-        if isinstance(self._pre_seeded_cache, dict):
-            self._cache = self._pre_seeded_cache
-        elif isinstance(self._pre_seeded_cache, str) and self._pre_seeded_cache.lower().endswith('.json'):
-            with open(self._pre_seeded_cache, 'r') as fin:
-                self._cache = json.load(fin)
-
-    def get(self, name: str, folder: Optional[str] = None, no_default: bool = False) -> Optional[str]:
-        pass
+    def get_shared_param(self, name: str, folder: str, env: Optional[str] = None) -> Optional[str]:
+        return base64.encodebytes(self.get_full_path(name, folder=folder, env=env).encode('utf-8')).decode('utf-8').strip()

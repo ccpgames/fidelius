@@ -1,7 +1,7 @@
 __all__ = [
     'FideliusAppProps',
 ]
-from ccptools.structs import *
+import dataclasses
 
 
 @dataclasses.dataclass

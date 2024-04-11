@@ -15,8 +15,8 @@ class IFideliusRepo(abc.ABC):
         """
         pass
 
-    @abc.abstractmethod
     @property
+    @abc.abstractmethod
     def app_props(self) -> FideliusAppProps:
         """The current application properties.
         """
@@ -151,9 +151,9 @@ class IFideliusAdminRepo(IFideliusRepo):
         """
         pass
 
-    @abc.abstractmethod
     @property
-    def tags(self) -> FideliusTags:
+    @abc.abstractmethod
+    def tags(self) -> Optional[FideliusTags]:
         """The tags to use when creating new parameters.
         """
         pass

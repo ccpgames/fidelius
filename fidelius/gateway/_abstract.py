@@ -1,5 +1,6 @@
 __all__ = [
     '_BaseFideliusRepo',
+    '_BaseFideliusAdminRepo',
 ]
 from .interface import *
 
@@ -21,6 +22,7 @@ class _BaseFideliusRepo(IFideliusRepo, abc.ABC):
     _EXPRESSION_PATTERN = re.compile(r'\${__FID__:(?:(?P<folder>\w+):)?(?P<name>[\w/-]+)}')
 
     def __init__(self, app_props: FideliusAppProps, **kwargs):
+        log.debug('_BaseFideliusRepo.__init__')
         self._app_props = app_props
 
         # Any kwargs should have been handled by implementation specific stuff,
@@ -38,7 +40,7 @@ class _BaseFideliusRepo(IFideliusRepo, abc.ABC):
     def make_app_path(self, env: Optional[str] = None) -> str:
         """The full path to application specific parameters/secrets.
         """
-        return self._SHARED_PATH_FORMAT.format(group=self.app_props.group,
+        return self._APP_PATH_FORMAT.format(group=self.app_props.group,
                                                env=env or self.app_props.env,
                                                app=self.app_props.app,
                                                name='{name}')
@@ -46,7 +48,7 @@ class _BaseFideliusRepo(IFideliusRepo, abc.ABC):
     def make_shared_path(self, folder: str, env: Optional[str] = None) -> str:
         """The full path to group shared parameters/secrets.
         """
-        return self._APP_PATH_FORMAT.format(group=self.app_props.group,
+        return self._SHARED_PATH_FORMAT.format(group=self.app_props.group,
                                             env=env or self.app_props.env,
                                             folder=folder,
                                             name='{name}')
@@ -155,3 +157,19 @@ class _BaseFideliusRepo(IFideliusRepo, abc.ABC):
         if m:
             return self.get(m.group('name'), m.group('folder'), no_default=no_default)
         return string
+
+
+class _BaseFideliusAdminRepo(_BaseFideliusRepo, IFideliusAdminRepo, abc.ABC):
+    """Covers a lot of admin basic functionality common across most storage back-ends.
+    """
+    def __init__(self, app_props: FideliusAppProps, tags: Optional[FideliusTags] = None, **kwargs):
+        log.debug('_BaseFideliusAdminRepo.__init__')
+        super().__init__(app_props, **kwargs)
+        self._tags = tags
+
+    @property
+    def tags(self) -> Optional[FideliusTags]:
+        return self._tags
+
+    def set_env(self, env: str):
+        self.app_props.env = env
