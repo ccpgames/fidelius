@@ -19,7 +19,7 @@ jobs:
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install --upgrade requirements.txt
+        pip install --upgrade -r requirements.txt
     - name: Run tests
       run: |
         python -m unittest discover -v -f ./tests/offline
@@ -56,7 +56,7 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install --upgrade requirements.txt
+          pip install --upgrade -r requirements.txt
       - name: Wait for LocalStack
         run: |
           until curl --fail http://localhost:4566/health; do sleep 5; done
