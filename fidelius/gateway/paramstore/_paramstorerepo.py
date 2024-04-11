@@ -19,8 +19,39 @@ class AwsParamStoreRepo(_BaseFideliusRepo):
                  aws_secret_access_key: str = None,
                  aws_key_arn: str = None,
                  aws_region_name: str = None,
+                 aws_endpoint_url: str = None,
+                 flush_cache_every_time: bool = False,
                  **kwargs):
+        """Fidelius Admin Repo that uses AWS' Simple Systems Manager's Parameter Store as a back end.
+
+        :param app_props: The current application properties.
+        :param aws_access_key_id: Optional AWS_ACCESS_KEY_ID which is otherwise
+                                  pulled from the FIDELIUS_AWS_ACCESS_KEY_ID or
+                                  AWS_ACCESS_KEY_ID environment variables.
+        :param aws_secret_access_key: Optional AWS_SECRET_ACCESS_KEY which is otherwise
+                                      pulled from the FIDELIUS_AWS_SECRET_ACCESS_KEY or
+                                      AWS_SECRET_ACCESS_KEY environment variables.
+        :param aws_key_arn: Optional ARN to an AWS KMS encryption key that'll be
+                            used to encrypt secret parameters. If not provided
+                            it'll be extracted from the FIDELIUS_AWS_KEY_ARN
+                            environment variable and if that is missing as well,
+                            an EnvironmentError is raised.
+        :param aws_region_name: Optional AWS region name, which is otherwise
+                                extracted from the FIDELIUS_AWS_REGION_NAME or
+                                AWS_DEFAULT_REGION environment variables or just
+                                set to `eu-west-1` by default is completely
+                                missing.
+        :param aws_endpoint_url: Optional custom AWS endpoint URL intended for
+                                 testing and development, e.g. by spinning up a
+                                 LocalStack container and pointing to that
+                                 instead of a live AWS environment.
+        :param flush_cache_every_time: Optional flat that'll flush the entire
+                                       cache before every operation if set to
+                                       True and is just intended for testing
+                                       purposes.
+        """
         super().__init__(app_props, **kwargs)
+        self._flush_cache_every_time = flush_cache_every_time
 
         self._aws_key_arn = aws_key_arn or os.environ.get('FIDELIUS_AWS_KEY_ARN', '')
         if not self._aws_key_arn:
@@ -28,71 +59,59 @@ class AwsParamStoreRepo(_BaseFideliusRepo):
 
         self._region_name = aws_region_name or os.environ.get('FIDELIUS_AWS_REGION_NAME', None) or os.environ.get('AWS_DEFAULT_REGION', 'eu-west-1')
 
-        # TODO(thordurm@ccpgames.com>) 2024-04-09: Check for aws_access_key_id and/or aws_secret_access_key
+        self._aws_endpoint_url = aws_endpoint_url or os.environ.get('FIDELIUS_AWS_ENDPOINT_URL', '')
 
         self._force_log_secrecy()
         self._ssm = boto3.client('ssm',
                                  region_name=self._region_name,
+                                 endpoint_url=self._aws_endpoint_url or None,
                                  aws_access_key_id=aws_access_key_id or os.environ.get('FIDELIUS_AWS_ACCESS_KEY_ID', None) or os.environ.get('AWS_ACCESS_KEY_ID', None),
                                  aws_secret_access_key=aws_secret_access_key or os.environ.get('FIDELIUS_AWS_SECRET_ACCESS_KEY', None) or os.environ.get('AWS_SECRET_ACCESS_KEY', None))
 
         self._cache: Dict[str, str] = {}
-        self._loaded: bool = False
-        self._loaded_folders: Set[str] = set()
-        self._default_store: Optional[AwsParamStoreRepo] = None
-        if self.app_props.env != 'default':
-            self._default_store = AwsParamStoreRepo(app_props=FideliusAppProps(app=app_props.app, group=app_props.group, env='default'),
-                                                    aws_access_key_id=aws_access_key_id,
-                                                    aws_secret_access_key=aws_secret_access_key,
-                                                    aws_key_arn=aws_key_arn,
-                                                    aws_region_name=aws_region_name)
+        self._loaded_paths: Set[str] = set()
 
-    def _full_path(self, name: str, folder: Optional[str] = None) -> str:
-        if folder:
-            return self._SHARED_FULL_NAME.format(group=self._group, folder=folder, env=self._env, name=name)
-        else:
-            return self._APP_FULL_NAME.format(group=self._group, app=self._app, env=self._env, name=name)
+    def _nameless_path(self, folder: Optional[str] = None, env: Optional[str] = None) -> str:
+        return self.get_full_path(name='', folder=folder, env=env)[:-1]
 
-    def _nameless_path(self, folder: Optional[str] = None) -> str:
-        return self._full_path(name='', folder=folder)[:-1]
-
-    def _force_log_secrecy(self):
+    @staticmethod
+    def _force_log_secrecy():
         # We don't allow debug or less logging of botocore's HTTP requests cause
         # those logs have unencrypted passwords in them!
         botolog = logging.getLogger('botocore')
         if botolog.level < logging.INFO:
             botolog.setLevel(logging.INFO)
 
-    def _load_all(self, folder: Optional[str] = None):
+    def _load_path(self, folder: Optional[str] = None, env: Optional[str] = None):
+        log.debug('AwsParamStoreRepo._load_path(folder=%s, env=%s)', folder, env)
         self._force_log_secrecy()
-        if folder:
-            if folder in self._loaded_folders:
-                return
-        else:
-            if self._loaded:
-                return
+
+        # This is stuff for unit-testing only!
+        if self._flush_cache_every_time:
+            self._loaded_paths = set()
+            self._cache = {}
+
+        path = self._nameless_path(folder, env)
+        if path in self._loaded_paths:
+            return
 
         response = self._ssm.get_parameters_by_path(
-            Path=self._nameless_path(folder),
+            Path=path,
             Recursive=True,
             WithDecryption=True
         )
+
         for p in response.get('Parameters', []):
             key = p.get('Name')
             if key:
                 self._cache[key] = p.get('Value')
 
-        if folder:
-            self._loaded_folders.add(folder)
-        else:
-            self._loaded = True
+        self._loaded_paths.add(path)
 
-    def get(self, name: str, folder: Optional[str] = None, no_default: bool = False) -> Optional[str]:
-        self._load_all(folder)
-        return self._cache.get(self._full_path(name, folder),
-                               None if no_default else self._get_default(name, folder))
+    def get_app_param(self, name: str, env: Optional[str] = None) -> Optional[str]:
+        self._load_path(env=env)
+        return self._cache.get(self.get_full_path(name, env=env), None)
 
-    def _get_default(self, name: str, folder: Optional[str] = None) -> Optional[str]:
-        if self._default_store:
-            return self._default_store.get(name, folder)
-        return None
+    def get_shared_param(self, name: str, folder: str, env: Optional[str] = None) -> Optional[str]:
+        self._load_path(folder=folder, env=env)
+        return self._cache.get(self.get_full_path(name, folder, env=env), None)

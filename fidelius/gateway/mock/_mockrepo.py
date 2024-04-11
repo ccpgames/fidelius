@@ -4,6 +4,7 @@ __all__ = [
 
 from fidelius.structs import *
 from fidelius.gateway._abstract import *
+from ._inmemcache import _SingletonDict
 
 import base64
 
@@ -21,9 +22,10 @@ class MockFideliusRepo(_BaseFideliusRepo):
         """
         log.debug('MockFideliusRepo.__init__')
         super().__init__(app_props, **kwargs)
+        self._cache: _SingletonDict[str, str] = _SingletonDict()
 
     def get_app_param(self, name: str, env: Optional[str] = None) -> Optional[str]:
-        return base64.encodebytes(self.get_full_path(name, env=env).encode('utf-8')).decode('utf-8').strip()
+        return self._cache.get(self.get_full_path(name, env=env), None)
 
     def get_shared_param(self, name: str, folder: str, env: Optional[str] = None) -> Optional[str]:
-        return base64.encodebytes(self.get_full_path(name, folder=folder, env=env).encode('utf-8')).decode('utf-8').strip()
+        return self._cache.get(self.get_full_path(name, folder, env=env), None)

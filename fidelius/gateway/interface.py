@@ -131,10 +131,14 @@ class IFideliusRepo(abc.ABC):
         - `${__FID__:PARAM_NAME}` for app params/secrets
         - `${__FID__:FOLDER:PARAM_NAME}` for shared params/secrets in the given FOLDER
 
+        An empty string is returned if the parameter was not found and if the
+        string does not match the expression format, it will be returned
+        unchanged.
+
         :param string: The expression to replace with an actual parameter/secret
         :param no_default: If True, does not try and get the default value if no
                            value was found for the current set environment.
-        :return: The requested value
+        :return: The requested value, an empty string or the original string
         """
         pass
 
@@ -147,7 +151,9 @@ class IFideliusAdminRepo(IFideliusRepo):
         :param app_props: The application properties to use.
         :param tags: An optional set of meta-data tags to use when creating new
                      parameters (if supported by the underlying
-                     parameter/secret storage).
+                     parameter/secret storage). Note that updating a parameter
+                     does not update/change tags, they are only applied when
+                     creating new parameters!
         """
         pass
 

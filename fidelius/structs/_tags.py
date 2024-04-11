@@ -46,7 +46,3 @@ class FideliusTags:
         if self._other:
             d.update(self._other)
         return d
-
-    def to_aws_format(self) -> List[Dict[str, str]]:
-        # TODO(thordurm@ccpgames.com>) 2024-04-09: Move to param-store implementation!
-        return [{'Key': k, 'Value': v} for k, v in self.to_dict().items()]

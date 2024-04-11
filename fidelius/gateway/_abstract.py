@@ -41,9 +41,9 @@ class _BaseFideliusRepo(IFideliusRepo, abc.ABC):
         """The full path to application specific parameters/secrets.
         """
         return self._APP_PATH_FORMAT.format(group=self.app_props.group,
-                                               env=env or self.app_props.env,
-                                               app=self.app_props.app,
-                                               name='{name}')
+                                            env=env or self.app_props.env,
+                                            app=self.app_props.app,
+                                            name='{name}')
 
     def make_shared_path(self, folder: str, env: Optional[str] = None) -> str:
         """The full path to group shared parameters/secrets.
@@ -117,23 +117,30 @@ class _BaseFideliusRepo(IFideliusRepo, abc.ABC):
                            value was found for the current set environment.
         :return: The requested parameter/secret or None if it was not found.
         """
+        log.debug('_BaseFideliusRepo.get(name=%s, folder=%s, no_default=%s))', name, folder, no_default)
         if folder:
             val = self.get_shared_param(name=name, folder=folder)
+            log.debug('_BaseFideliusRepo.get->get_shared_param val=%s', val)
             if val is not None:
                 return val
 
             if no_default:
+                log.debug('_BaseFideliusRepo.get->(shared) no_default STOP!')
                 return None
 
+            log.debug('_BaseFideliusRepo.get->(shared) Lets try the default!!!')
             return self.get_shared_param(name=name, folder=folder, env='default')
         else:
             val = self.get_app_param(name=name)
+            log.debug('_BaseFideliusRepo.get->get_app_param val=%s', val)
             if val is not None:
                 return val
 
             if no_default:
+                log.debug('_BaseFideliusRepo.get->(app) no_default STOP!')
                 return None
 
+            log.debug('_BaseFideliusRepo.get->(app) Lets try the default!!!')
             return self.get_app_param(name=name, env='default')
 
     def replace(self, string: str, no_default: bool = False) -> str:
@@ -145,17 +152,18 @@ class _BaseFideliusRepo(IFideliusRepo, abc.ABC):
         - `${__FID__:PARAM_NAME}` for app params/secrets
         - `${__FID__:FOLDER:PARAM_NAME}` for shared params/secrets in the given FOLDER
 
-        If the given string does not match a Fidilius expression, then it is
-        returned unchanged.
+        An empty string is returned if the parameter was not found and if the
+        string does not match the expression format, it will be returned
+        unchanged.
 
         :param string: The expression to replace with an actual parameter/secret
         :param no_default: If True, does not try and get the default value if no
                            value was found for the current set environment.
-        :return: The requested value
+        :return: The requested value, an empty string or the original string
         """
         m = self._EXPRESSION_PATTERN.match(string)
         if m:
-            return self.get(m.group('name'), m.group('folder'), no_default=no_default)
+            return self.get(m.group('name'), m.group('folder'), no_default=no_default) or ''
         return string
 
 
@@ -163,7 +171,7 @@ class _BaseFideliusAdminRepo(_BaseFideliusRepo, IFideliusAdminRepo, abc.ABC):
     """Covers a lot of admin basic functionality common across most storage back-ends.
     """
     def __init__(self, app_props: FideliusAppProps, tags: Optional[FideliusTags] = None, **kwargs):
-        log.debug('_BaseFideliusAdminRepo.__init__')
+        log.debug('_BaseFideliusAdminRepo.__init__ (this should set tags?!?)')
         super().__init__(app_props, **kwargs)
         self._tags = tags
 

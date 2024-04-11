@@ -4,15 +4,17 @@ __all__ = [
 
 from fidelius.gateway._abstract import *
 from fidelius.structs import *
+from ._mockrepo import *
 
 import logging
 log = logging.getLogger(__name__)
 
 
-class MockFideliusAdmin(_BaseFideliusAdminRepo):
+class MockFideliusAdmin(_BaseFideliusAdminRepo, MockFideliusRepo):
     def __init__(self, app_props: FideliusAppProps, tags: Optional[FideliusTags] = None, **kwargs):
         """This mock version of the Fidelius Admin stores created and updated
-        params in memory only.
+        params in memory only (although the cache is a singleton so multiple
+        instances of both admin and repo will be useing the same dict/data.
 
         Note that it does NOT extend the functionality of its non-Admin sibling,
         the MockFideliusRepo and thus does not return a base64 encoded version
@@ -25,13 +27,6 @@ class MockFideliusAdmin(_BaseFideliusAdminRepo):
         """
         log.debug('MockFideliusAdmin.__init__')
         super().__init__(app_props, tags, **kwargs)
-        self._cache = {}
-
-    def get_app_param(self, name: str, env: Optional[str] = None) -> Optional[str]:
-        return self._cache.get(self.get_full_path(name, env=env), None)
-
-    def get_shared_param(self, name: str, folder: str, env: Optional[str] = None) -> Optional[str]:
-        return self._cache.get(self.get_full_path(name, folder, env=env), None)
 
     def _create(self, name: str, value: str, env: Optional[str] = None, folder: Optional[str] = None) -> (str, str):
         key = self.get_full_path(name, folder=folder, env=env)
