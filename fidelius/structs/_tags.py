@@ -1,10 +1,10 @@
 __all__ = [
-    'Tags',
+    'FideliusTags',
 ]
 from ._base import *
 
 
-class Tags:
+class FideliusTags:
     __slots__ = ('application', 'owner', 'tier', 'finance', '_other')
 
     def __init__(self, application: str, owner: str, tier: str = 'default', finance: str = 'COST', **kwargs):
@@ -32,6 +32,10 @@ class Tags:
     def __delattr__(self, name: str):
         self.__setattr__(name, None)
 
+    def __repr__(self) -> str:
+        tags = ', '.join([f"{k}='{v}'" for k, v in self.to_dict().items()])
+        return f'{self.__class__.__name__}({tags})'
+
     def to_dict(self) -> Dict[str, str]:
         d = {
             'application': self.application,
@@ -42,6 +46,3 @@ class Tags:
         if self._other:
             d.update(self._other)
         return d
-
-    def to_aws_format(self) -> List[Dict[str, str]]:
-        return [{'Key': k, 'Value': v} for k, v in self.to_dict().items()]

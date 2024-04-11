@@ -1,3 +1,3 @@
-from fidelius.structs import *
-from fidelius.gateway.paramstore import *
-from fidelius.utils import *
+from fidelius.structs.api import *
+from fidelius.gateway.interface import *
+from fidelius.gateway import FideliusFactory

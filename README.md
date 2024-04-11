@@ -9,7 +9,10 @@ package in mind but should work for other cases as well.
 **IMPORTANT:** This has been migrated more-or-less _"as-is"_ from CCP Tool's 
 internal repo and hasn't yet been given the love it needs to be properly 
 open-sourced and user friendly for other people _(unless you read though the 
-code and find it perfectly fits your use case)_. 
+code and find it perfectly fits your use case)_.
+
+**ALSO IMPORTANT:** This README hasn't been updated to reflect changes in 
+version 1.0.0 yet. Sowwie! :-/
 
 ## What should be stored with Fidelius
 
