@@ -2,6 +2,9 @@ __all__ = [
     '_BaseFideliusRepo',
     '_BaseFideliusAdminRepo',
 ]
+
+import re
+
 from .interface import *
 
 from fidelius.structs import *
@@ -49,9 +52,9 @@ class _BaseFideliusRepo(IFideliusRepo, abc.ABC):
         """The full path to group shared parameters/secrets.
         """
         return self._SHARED_PATH_FORMAT.format(group=self.app_props.group,
-                                            env=env or self.app_props.env,
-                                            folder=folder,
-                                            name='{name}')
+                                               env=env or self.app_props.env,
+                                               folder=folder,
+                                               name='{name}')
 
     def get_expression_string(self, name: str, folder: Optional[str] = None) -> str:
         """Return a Fidelius expression string (e.g. to use in configuration
@@ -165,6 +168,23 @@ class _BaseFideliusRepo(IFideliusRepo, abc.ABC):
         if m:
             return self.get(m.group('name'), m.group('folder'), no_default=no_default) or ''
         return string
+
+    def set_app_path_format(self, new_format: str):
+        self._APP_PATH_FORMAT = new_format
+
+    def set_shared_path_format(self, new_format: str):
+        self._SHARED_PATH_FORMAT = new_format
+
+    def set_app_expression_format(self, new_format: str):
+        self._EXPRESSION_APP_FORMAT = new_format
+
+    def set_shared_expression_format(self, new_format: str):
+        self._EXPRESSION_SHARED_FORMAT = new_format
+
+    def set_expression_pattern(self, new_format: Union[str, re.Pattern]):
+        if isinstance(new_format, str):
+            new_format = re.compile(new_format)
+        self._EXPRESSION_PATTERN = new_format
 
 
 class _BaseFideliusAdminRepo(_BaseFideliusRepo, IFideliusAdminRepo, abc.ABC):
