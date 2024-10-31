@@ -12,7 +12,7 @@ authors = [
     { name = "Thordur Matthiasson", email = "thordurm@ccpgames.com" },
     { name = "Kristin Fjola Tomasdottir", email = "kristinf@ccpgames.com" }
 ]
-keywords = [ "parameter store", "aws", "secrets", "tools", "ccp", "utils" ]
+keywords = [ "parameter store", "aws", "secrets", "tools", "ccp", "utils", "hashicorp vault" ]
 classifiers = [
     "Development Status :: 4 - Beta",
 
@@ -35,7 +35,8 @@ classifiers = [
 ]
 dependencies = [
     "ccptools >=1.1, <2",
-    "boto3 >=1.20, <2"
+    "boto3 >=1.20, <2",
+    "havc >= 2.2, <3"
 ]
 
 [project.urls]
