@@ -5,21 +5,27 @@ __all__ = [
 from fidelius.structs import *
 from fidelius.gateway._abstract import *
 
-
-import boto3
 import os
 
 import logging
 log = logging.getLogger(__name__)
 
+try:
+    import boto3
+except ImportError:
+    log.error('You are trying to use the AwsParamStoreRepo without boto3 installed.')
+    log.error('Please amend your pip install to `fidelius[aws]` to include boto3 dependencies.')
+    raise
+
 
 class AwsParamStoreRepo(_BaseFideliusRepo):
     def __init__(self, app_props: FideliusAppProps,
-                 aws_access_key_id: str = None,
-                 aws_secret_access_key: str = None,
-                 aws_key_arn: str = None,
-                 aws_region_name: str = None,
-                 aws_endpoint_url: str = None,
+                 aws_access_key_id: Optional[str] = None,
+                 aws_secret_access_key: Optional[str] = None,
+                 aws_key_arn: Optional[str] = None,
+                 aws_region_name: Optional[str] = None,
+                 aws_endpoint_url: Optional[str] = None,
+                 aws_profile_name: Optional[str] = None,
                  flush_cache_every_time: bool = False,
                  **kwargs):
         """Fidelius Admin Repo that uses AWS' Simple Systems Manager's Parameter Store as a back end.
@@ -45,6 +51,7 @@ class AwsParamStoreRepo(_BaseFideliusRepo):
                                  testing and development, e.g. by spinning up a
                                  LocalStack container and pointing to that
                                  instead of a live AWS environment.
+        :param aws_profile_name: ....add this @TODO
         :param flush_cache_every_time: Optional flat that'll flush the entire
                                        cache before every operation if set to
                                        True and is just intended for testing

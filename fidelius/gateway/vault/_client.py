@@ -3,11 +3,17 @@ __all__ = [
 ]
 from fidelius.structs import *
 from ._structs import *
-import hvac
-
 
 import logging
 log = logging.getLogger(__file__)
+
+
+try:
+    import hvac
+except ImportError:
+    log.error('You are trying to use the VaultKeyValRepo without hvac installed.')
+    log.error('Please amend your pip install to `fidelius[vaulst]` to include hvac dependencies.')
+    raise
 
 
 class VaultGateway:
