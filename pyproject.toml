@@ -38,7 +38,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-vault = ["havc >= 2.2, <3"]
+vault = ["hvac >= 2.2, <3"]
 aws = ["boto3 >=1.20, <2"]
 
 

@@ -9,3 +9,4 @@ venv*/
 
 # IDEA Stuff
 .idea/
+/_sandbox*.py
