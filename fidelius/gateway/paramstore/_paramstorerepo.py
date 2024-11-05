@@ -64,16 +64,20 @@ class AwsParamStoreRepo(_BaseFideliusRepo):
         if not self._aws_key_arn:
             raise EnvironmentError('Fidelius AwsParamStoreRepo requires the ARN for the KMS key argument when initialising or in the FIDELIUS_AWS_KEY_ARN environment variable')
 
-        self._region_name = aws_region_name or os.environ.get('FIDELIUS_AWS_REGION_NAME', None) or os.environ.get('AWS_DEFAULT_REGION', 'eu-west-1')
+        self._region_name = aws_region_name or os.environ.get('FIDELIUS_AWS_REGION_NAME', None)
 
-        self._aws_endpoint_url = aws_endpoint_url or os.environ.get('FIDELIUS_AWS_ENDPOINT_URL', '')
+        self._aws_endpoint_url = aws_endpoint_url or os.environ.get('FIDELIUS_AWS_ENDPOINT_URL', None)
+        self._aws_profile_name = aws_profile_name or os.environ.get('FIDELIUS_AWS_PROFILE', None)
 
         self._force_log_secrecy()
-        self._ssm = boto3.client('ssm',
-                                 region_name=self._region_name,
-                                 endpoint_url=self._aws_endpoint_url or None,
-                                 aws_access_key_id=aws_access_key_id or os.environ.get('FIDELIUS_AWS_ACCESS_KEY_ID', None) or os.environ.get('AWS_ACCESS_KEY_ID', None),
-                                 aws_secret_access_key=aws_secret_access_key or os.environ.get('FIDELIUS_AWS_SECRET_ACCESS_KEY', None) or os.environ.get('AWS_SECRET_ACCESS_KEY', None))
+        self._session = boto3.Session(profile_name=self._aws_profile_name,
+                                      region_name=self._region_name,
+                                      aws_access_key_id=aws_access_key_id or os.environ.get(
+                                          'FIDELIUS_AWS_ACCESS_KEY_ID', None),
+                                      aws_secret_access_key=aws_secret_access_key or os.environ.get(
+                                          'FIDELIUS_AWS_SECRET_ACCESS_KEY', None))
+        self._ssm = self._session.client('ssm',
+                                         endpoint_url=self._aws_endpoint_url or None)
 
         self._cache: Dict[str, str] = {}
         self._loaded_paths: Set[str] = set()
